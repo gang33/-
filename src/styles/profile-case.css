@@ -1,0 +1,752 @@
+/* ============================================================================
+   个人经历 —— 按 Illustrator 导出的 PDF 精确复刻
+   ----------------------------------------------------------------------------
+   数据来源：`_素材/个人经历/个人经历.pdf`（1519.54 × 1033.05 pt，1:1.4709）
+   用 pymupdf 读出每个文本块的真实坐标，全部换算成「页宽百分比」。
+
+   横向（页宽 %）：
+     4.96   分隔线左端        5.50   ● 标签文字
+     9.20   About Me 起笔    10.19   内容左（label / EXPERIENCE）
+    52.62   中列（公司、时间、邮箱、电话）
+    87.96   右列（职位、描述、生日）
+    94.08   右对齐基准        95.17   分隔线右端
+
+   字号（pt → 1600 宽下的 px）：
+    12 → 12px（用户指定）      16 → 16px（● 标签）
+    14 → 14px（生日 label）   157.13 → 10.34vw（About Me）
+    93.28 → 6.14vw（EXPERIENCE，OPPO Sans Light）
+
+   纵向按页高百分比换算成 vw（1% 页高 = 0.6797vw），这样整段会等比缩放。
+   调试：URL 加 ?grid=1 显示五条参考线。
+   ========================================================================== */
+
+/* 去掉旧 section 的顶部内边距，改由 .pf__sheet 自己控顶距 */
+.profile {
+  /* 上下都不留白：下面紧接「品牌项目经验」，它的黑带直接接在这段的黑底上 */
+  padding-block: 0;
+}
+
+.pf__sheet {
+  /* 内容抬一层，跟手图（z-index 0）才会跑到文字下面 */
+  position: relative;
+  z-index: 1;
+  --g-rule-l: 4.96%;
+  --g-edge: 5.5%;
+  --g-pad: 10.19%;
+  --g-mid: 52.62%;
+  --g-right: 87.96%;
+  --g-end: 94.08%;
+  --g-rule-r: 95.17%;
+
+  /* 内容区 5.5% → 94.08%，宽 88.58%，换算成 grid 内部比例 */
+  /* 内容区被 PDF 的 10.19% 起点吃掉一段，列宽按剩余宽度重算 */
+  --c-gap: 5.3%;
+  --c-1: 50.62fr;
+  --c-2: 42.14fr;
+  --c-3: 7.3fr;
+
+  --rule: color-mix(in srgb, #ffffff 22%, transparent);
+  /* 左右边距沿用 .shell 的 --gutter，这里只加顶部节奏 */
+  padding-top: clamp(26px, 3.1vw, 50px);
+}
+
+/* 撑满整幅的细线：比内容区更宽，两端各出一点 */
+/* 全站横线的唯一来源：宽度 = 内容区（左右都由 .shell 的 --gutter 决定），
+   要改线宽只改 --gutter，别在单条线上打补丁。 */
+.pf__rule {
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: var(--rule);
+}
+
+/* ---------------- ● 关于我 / 来自 ---------------- */
+.pf__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  /* 「● 关于我」「来自 广东揭阳」贴到下面那条细线：
+     这 2.09vw 原本是「文字底 → 线」之间的空隙，挪成上内边距之后
+     文字整体下移、线的位置不动，head 的总高度也不变。
+     整体再往上收 10px（空隙挪回下边距），细线和总高依旧不受影响。 */
+  padding-top: calc(2.09vw - 10px);
+  padding-bottom: 10px;
+}
+
+.pf__dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62vw;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, #ffffff 86%, transparent);
+  white-space: nowrap;
+}
+
+.pf__dot i {
+  width: 0.48vw;
+  height: 0.48vw;
+  min-width: 5px;
+  min-height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.pf__from,
+.pf__meta dt,
+.pf__meta dd,
+.pf__rowPeriod,
+.pf__rowOrg,
+.pf__rowRole,
+.pf__rowNote {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.pf__from {
+  color: color-mix(in srgb, #ffffff 62%, transparent);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* 跟手图（.pf__peek, z-index 0）在文字底下：
+   这些文字块抬到 z-index 5，鼠标移动时图从字下面穿过，永远不遮字。
+   注意只抬层级、不要加背景，否则图会被切碎。 */
+.pf__head,
+.pf__script,
+.pf__meta,
+.pf__big,
+.pf__rowsLabel,
+.pf__row {
+  position: relative;
+  z-index: 5;
+}
+/* About Me 是手写连笔，不能拆字 —— 改成整体从左往右「写」出来 */
+.pf__script .pf__type {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.16em);
+  clip-path: inset(-25% 100% -25% 0);
+}
+
+.pf__script.is-in .pf__type {
+  animation: pf-write 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pf-write {
+  0% {
+    opacity: 0;
+    transform: translateY(0.16em);
+    clip-path: inset(-25% 100% -25% 0);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(-25% -3% -25% 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf__script .pf__type {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    animation: none !important;
+  }
+}
+/* ---------------- 逐字渐现（About Me / EXPERIENCE） ---------------- */
+/* 每个字一层 span，进视口后按 --i 错峰浮现：从下方升上来 + 轻微模糊消散 */
+.pf__type {
+  display: inline-block;
+}
+
+.pf__ch {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.42em);
+  filter: blur(6px);
+  will-change: opacity, transform, filter;
+}
+
+.pf__script.is-in .pf__ch,
+.pf__big.is-in .pf__ch {
+  animation: pf-type-in 0.86s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 46ms);
+}
+
+@keyframes pf-type-in {
+  0% {
+    opacity: 0;
+    transform: translateY(0.42em);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf__ch {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none !important;
+  }
+}
+/* ---------------- DecryptedText 的「渐现」层 ---------------- */
+/* 未解开的字母：淡 + 模糊；解开时收紧到清晰，形成打字浮现的感觉 */
+.dt-off {
+  opacity: 0.08;
+}
+
+/* 小字统一用大字那套：.dt-off 淡 + .dt-on 渐现，不再单独做推入 */
+
+.dt-on {
+  opacity: 1;
+  transition: opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* EXPERIENCE 是 inline-block，可以再用位移托一下；About Me 是 inline（为了连笔）不能位移 */
+.pf__bigWrap .dt-off {
+  transform: translateY(0.2em);
+}
+
+.pf__bigWrap /* 小字统一用大字那套：.dt-off 淡 + .dt-on 渐现，不再单独做推入 */
+
+.dt-on {
+  transform: translateY(0);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-off,
+  /* 小字统一用大字那套：.dt-off 淡 + .dt-on 渐现，不再单独做推入 */
+
+.dt-on {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------------- About Me ---------------- */
+.pf__script {
+  /* 上方留白与「信息表下方 → 工作经验」那一截对齐（约 258px） */
+  margin: 4.92vw 0 0 4.18%;
+  font-family: var(--font-script);
+  /* PDF 里这行占 37.48% 页宽；浏览器渲染比 AI 里宽约 30%，按宽度校准 */
+  font-size: min(7.91vw, 126px);
+  /* 拆字后 kerning 跨 span 失效，整行略窄；补一点点字距，别多到把连笔拉开 */
+  letter-spacing: -0.005em;
+  font-weight: 400;
+  line-height: 0.86;
+  color: #c0392f;
+  white-space: nowrap;
+}
+
+/* DecryptedText 把每个字母包成 span。必须是 inline：inline-block 会让每个字母
+   独立排版，手写体连笔的负字距和溢出全部丢失，整行会缩窄约 30%、连笔也断。
+   尚未解开的字母由组件内联样式（position:absolute 的 glyph）负责，不受影响。 */
+.pf__script span {
+  display: inline;
+}
+
+/* ---------------- 信息表：每行撑满内容区，行间线与全站同宽 ---------------- */
+.pf__meta {
+  margin: 4.44vw 0 0;
+  padding: 0;
+}
+
+.pf__metaLine {
+  display: grid;
+  /* 三列的起点严格按 PDF：10.19 / 52.62 / 87.96（页宽 %） */
+  grid-template-columns: 47.12fr 35.34fr 6.54fr;
+  align-items: baseline;
+  padding: 0.62vw 0 0.86vw;
+}
+
+.pf__metaLine.is-second {
+  border-top: 1px solid var(--rule);
+}
+
+/* label 宽度自适应 + 统一的 label→值间距：
+   三组的视觉间距必须一致，比死抠 PDF 的 2.70/3.56/2.64 更重要 */
+.pf__metaCell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 1.05vw;
+  align-items: baseline;
+}
+
+/* 第一列的 label 要让内容从 10.19% 起，所以整格向右缩进 4.69% */
+.pf__metaCell:nth-child(1) {
+  padding-left: 4.69vw;
+}
+
+.pf__meta dt {
+  color: color-mix(in srgb, #ffffff 52%, transparent);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* 生日 label 在原稿里是 14pt，但和其它两组摆在一起会显大、间距也会歪，
+   这里统一成 12px，让三组 label 完全等高 */
+
+.pf__meta dd {
+  margin: 0;
+  color: color-mix(in srgb, #ffffff 92%, transparent);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.pf__meta dd a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, #ffffff 26%, transparent);
+  padding-bottom: 1px;
+}
+
+.pf__meta dd a:hover {
+  border-bottom-color: currentColor;
+}
+
+/* ---------------- EXPERIENCE ---------------- */
+/* EXPERIENCE 容器：宽度卡在 PDF 的 34.27%（相对内容区约 38.5%），高度按字号给 */
+.pf__bigWrap {
+  /* 和别的文字块一样抬到跟手图（z-index:0）之上 */
+  position: relative;
+  z-index: 1;
+  /* 宽度对齐 PDF 的 34.27% 页宽；字号按容器高度给，DecryptedText 会按字符自身宽度排版 */
+  width: 38.5%;
+  margin: clamp(40px, 5.2vw, 86px) 0 clamp(12px, 1.6vw, 26px) 5.3%;
+  font-family: var(--font-display);
+  font-size: min(5.68vw, 91px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.pf__big {
+  margin: 6.85vw 0 0 5.3%;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: min(5.68vw, 91px);
+  line-height: 1;
+  /* 拆字后 kerning 跨 span 失效，整行略窄；补一点点字距，别多到把连笔拉开 */
+  letter-spacing: -0.005em;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.pf__big span {
+  display: inline-block;
+}
+
+/* ---------------- 经历列表 ---------------- */
+.pf__rows {
+  position: relative;
+  margin: 5.25vw 0 0;
+}
+
+.pf__rowsLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62vw;
+  /* 绝对定位到第一条经历的左侧，和公司名「底对齐」；
+     不占文档流，所以那条全宽分隔线不会穿过它 */
+  position: absolute;
+  left: 0;
+  top: 2.19vw;
+  margin: 0;
+  /* 绝对定位后会被后面的 .pf__row 盖住，点不到；抬一层 */
+  z-index: 3;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, #ffffff 86%, transparent);
+  white-space: nowrap;
+}
+
+.pf__rowsLabel i {
+  width: 0.48vw;
+  height: 0.48vw;
+  min-width: 5px;
+  min-height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.pf__row {
+  display: grid;
+  /* 4 列：第一列是空位（让公司名落到 52.62%），线横跨全部 4 列 = 内容区全宽 */
+  grid-template-columns: 4.69fr 42.43fr 35.34fr 6.54fr;
+  grid-template-areas:
+    '. . org role'
+    'rule rule rule rule'
+    '. . period note';
+  align-items: start;
+  /* 行间收紧：原来是 2.32vw + 4.66vw（约 112px），太散 */
+  margin-top: 1.15vw;
+  padding-bottom: 1.5vw;
+  position: relative;
+}
+
+.pf__rowOrg {
+  grid-area: org;
+  margin: 0;
+  padding-bottom: 0.95vw;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.pf__rowPeriod {
+  grid-area: period;
+  margin-top: 0.33vw;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, #ffffff 62%, transparent);
+}
+
+.pf__rowRole {
+  grid-area: role;
+  justify-self: end;
+  text-align: right;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, #ffffff 92%, transparent);
+  white-space: nowrap;
+}
+
+.pf__rowNote {
+  /* 小屏的 grid-template-areas 里有 note 这一格，必须认领它，
+     否则会被自动放置到第一行、和公司名叠在一起。
+     桌面端让 grid-column 覆盖列跨度（行仍跟着 note 走）。 */
+  grid-area: note;
+  grid-column: 2 / -1;
+  justify-self: end;
+  text-align: right;
+  margin: 0.33vw 0 0;
+  max-width: 29%;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, #ffffff 62%, transparent);
+}
+
+/* 公司行与时间行之间的那条线 */
+.pf__row::before {
+  content: '';
+  grid-area: rule;
+  height: 1px;
+  margin: 0.72vw 0 0.62vw;
+  background: var(--rule);
+}
+
+/* hover：整行提亮 + 右侧箭头 */
+.pf__row::after {
+  content: '↗';
+  position: absolute;
+  top: -0.2vw;
+  right: calc(-1 * (var(--g-end) - var(--g-right)) - 1.4vw);
+  font-size: 13px;
+  color: #ffffff;
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition:
+    opacity 0.34s ease,
+    transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.pf__row:hover::after {
+  opacity: 0.9;
+  transform: translate(0, 0);
+}
+
+/* ---------------- 跟手预览 ---------------- */
+/* 两张图比例不一样：人像是竖构图（带底部黄名片），跳跃那张是横构图、只有人物。
+   所以尺寸和比例都按 data-mode 分开给，不去强行统一画布。 */
+.pf__peek {
+  position: fixed;
+  left: 0;
+  top: 0;
+  /* 位置由 JS 每帧写 translate（只写这一条属性，比写两个 CSS 变量便宜）；
+     这里的值是没接上 JS 时的兜底。 */
+  translate: 0 0;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.94;
+  transition:
+    opacity 0.14s ease,
+    scale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 压到文字层下面：字压在图上面，但图本身完整、不被切 */
+  z-index: 0;
+  will-change: translate;
+  /* 两张图叠着放，阴影交给整块算，切换时不会出现两圈影子。
+    drop-shadow 是每帧跟着层走的滤镜：模糊半径一翻倍，纹理面积就是四倍，
+    跟手移动时是实打实的合成器开销，所以这里压到 16。 */
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+
+/* 关于我：竖构图人像 + 黄名片（760×1075）。
+   宽度由编辑模式「图片 → 跟手图尺寸」写进 --peek-mew。 */
+.pf__peek[data-mode='me'] {
+  width: var(--peek-mew, 300px);
+  max-width: 82vw;
+  aspect-ratio: 1422 / 2012;
+}
+
+/* 工作经验：横构图跳跃人物，透明底、没有名片（1465×1144）。
+   宽度由 --peek-workw 控制。 */
+.pf__peek[data-mode='work'] {
+  width: var(--peek-workw, 600px);
+  max-width: 88vw;
+  aspect-ratio: 1465 / 1144;
+}
+
+.pf__peek.is-on {
+  opacity: 1;
+  scale: 1;
+  /* 出现要「马上」：透明度不做过场，只剩一点点放大收束 */
+  transition:
+    opacity 0s,
+    scale 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 换边（右→左 / 左→右）的瞬间淡一下：那一跳是一千多像素，
+   硬切会被读成掉帧，淡一下就成了「换到另一边出现」。 */
+.pf__peek.is-flipping {
+  opacity: 0.35;
+  transition:
+    opacity 0.07s ease,
+    scale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 跟手图出场时隐藏系统光标，让图代替光标 */
+.pf__sheet.is-peeking,
+.pf__sheet.is-peeking * {
+  cursor: none;
+}
+
+/* 两张图各自按容器尺寸铺满（容器比例已按 data-mode 分开），按模式交叉淡入：
+   关于我 → 人像；滚到工作经验 → 跳跃人物。 */
+.pf__peek img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pf__peek[data-mode='me'] .pf__peekImg--me,
+.pf__peek[data-mode='work'] .pf__peekImg--work {
+  opacity: 1;
+}
+
+/* About Me 与 EXPERIENCE 的入场动画已交给 DecryptedText 组件，
+   原来那套「每行文字整体上浮」的规则会把组件内部的 span 一起拽下去，这里删掉。 */
+
+/* ---------------- 参考线（?grid=1） ---------------- */
+.pf__sheet.is-grid {
+  position: relative;
+}
+
+.pf__sheet.is-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(var(--g-rule-l) - 1px),
+    rgba(255, 90, 90, 0.55) calc(var(--g-rule-l) - 1px),
+    rgba(255, 90, 90, 0.55) var(--g-rule-l),
+    transparent var(--g-rule-l),
+    transparent calc(var(--g-edge) - 1px),
+    rgba(90, 170, 255, 0.55) calc(var(--g-edge) - 1px),
+    rgba(90, 170, 255, 0.55) var(--g-edge),
+    transparent var(--g-edge),
+    transparent calc(var(--g-pad) - 1px),
+    rgba(255, 90, 90, 0.55) calc(var(--g-pad) - 1px),
+    rgba(255, 90, 90, 0.55) var(--g-pad),
+    transparent var(--g-pad),
+    transparent calc(var(--g-mid) - 1px),
+    rgba(255, 90, 90, 0.55) calc(var(--g-mid) - 1px),
+    rgba(255, 90, 90, 0.55) var(--g-mid),
+    transparent var(--g-mid),
+    transparent calc(var(--g-right) - 1px),
+    rgba(255, 90, 90, 0.55) calc(var(--g-right) - 1px),
+    rgba(255, 90, 90, 0.55) var(--g-right),
+    transparent var(--g-right),
+    transparent calc(var(--g-end) - 1px),
+    rgba(90, 170, 255, 0.55) calc(var(--g-end) - 1px),
+    rgba(90, 170, 255, 0.55) var(--g-end),
+    transparent var(--g-end),
+    transparent calc(var(--g-rule-r) - 1px),
+    rgba(255, 90, 90, 0.55) calc(var(--g-rule-r) - 1px),
+    rgba(255, 90, 90, 0.55) var(--g-rule-r),
+    transparent var(--g-rule-r),
+    transparent 100%
+  );
+}
+
+.pf__sheet.is-grid::after {
+  content: '4.96 · 5.50 · 10.19 · 52.62 · 87.96 · 94.08 · 95.17';
+  position: absolute;
+  left: var(--g-rule-l);
+  top: 0;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 120, 120, 0.9);
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* ---------------- 窄屏：单列、去掉跟手预览 ---------------- */
+@media (max-width: 900px) {
+  .pf__sheet {
+  /* 内容抬一层，跟手图（z-index 0）才会跑到文字下面 */
+  position: relative;
+  z-index: 1;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .pf__rule {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .pf__script {
+    font-size: 21vw;
+    margin-top: 26px;
+  }
+
+  .pf__meta {
+    grid-template-columns: 1fr;
+    margin-top: 34px;
+  }
+
+  /* 三列并排会挤出屏幕，窄屏改成一行一组「标签 + 值」 */
+  .pf__metaLine {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 6px;
+    padding: 8px 0 10px;
+  }
+
+  .pf__metaCell {
+    display: contents;
+  }
+
+  .pf__metaLine:nth-child(n + 1) {
+    border-top: 1px solid var(--rule);
+  }
+
+  /* EXPERIENCE 容器：宽度卡在 PDF 的 34.27%（相对内容区约 38.5%），高度按字号给 */
+.pf__bigWrap {
+  /* 和别的文字块一样抬到跟手图（z-index:0）之上 */
+  position: relative;
+  z-index: 1;
+  /* 宽度对齐 PDF 的 34.27% 页宽；字号按容器高度给，DecryptedText 会按字符自身宽度排版 */
+  width: 38.5%;
+  margin: clamp(40px, 5.2vw, 86px) 0 clamp(12px, 1.6vw, 26px) 5.3%;
+  font-family: var(--font-display);
+  font-size: min(5.68vw, 91px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.pf__big {
+    font-size: 15vw;
+    margin-top: 46px;
+  }
+
+  .pf__row {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'org'
+      'role'
+      'rule'
+      'period'
+      'note';
+    margin-top: 22px;
+    padding-bottom: 26px;
+  }
+
+  .pf__rowRole,
+  .pf__rowNote {
+    justify-self: start;
+    text-align: left;
+  }
+
+  /* 单列网格里 grid-column: 2 / -1 会凭空多出一个隐式列，
+     note 被推到右边缩进一大截 —— 窄屏取消这个跨度。 */
+  .pf__rowNote {
+    grid-column: auto;
+    max-width: 100%;
+  }
+
+  .pf__rowRole {
+    margin-top: 3px;
+  }
+
+  .pf__row::before {
+    margin: 10px 0 8px;
+  }
+
+  .pf__row::after,
+  .pf__peek {
+    display: none;
+  }
+
+  /* 窄屏没有左侧空白区，"● 工作经验" 不能再绝对定位到行左边，会压在公司名上 */
+  .pf__rowsLabel {
+    position: static;
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .pf__rows {
+    margin-top: 34px;
+  }
+}
+
+/* 「关于我」「来自 广东揭阳」「工作经验」这一组小标签：
+   中文用思源黑体（Outfit 没有中文字形，只能靠系统字体兜底，形状不受控），
+   英文和数字仍然优先 Outfit。它们都带 .mono，所以两个类叠起来压过 .mono。 */
+.pf__dot.mono,
+.pf__from.mono,
+.pf__rowsLabel.mono {
+  font-family: 'Outfit', 'Source Han Sans SC', var(--font-mono);
+  letter-spacing: 0.01em;
+}
+

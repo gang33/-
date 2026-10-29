@@ -1,0 +1,269 @@
+/* ---------------- 尾页（照 尾页.pdf 复原） ---------------- */
+/* PDF 页 1519.54 × 1033.05，比例 1.4709。用 aspect-ratio 锁住，
+   内部一律百分比定位，缩放时版式不变。 */
+.ct {
+  background: #000;
+  color: #fff;
+}
+
+.ct__sheet {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1519.54 / 1033.05;
+  overflow: hidden;
+}
+
+/* 顶部装饰：PDF 里是「白底 + 4 条实心黑带」，黑带从细到粗，
+   最后一条直接并进下方的大黑块 —— 视觉上是一道从白压到黑的过渡带。
+   坐标全部取自 PDF：19.7-33 / 52.7-83 / 102.7-157.7 / 169.4-208.2 */
+.ct__stripes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 白底：0 → 208.2 / 1033.05。黑带压在上面，所以只需铺到黑带区域就行 */
+.ct__white {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20.15%;
+  background: #ffffff;
+  z-index: 1;
+}
+
+/* 四条黑带：top / height 由 JS 写（百叶窗联动），这里只给共性 */
+.ct__stripes i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #000000;
+  z-index: 2;
+  transition: height 0.18s linear;
+  will-change: height;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct__stripes i {
+    transition: none;
+  }
+}
+
+/* 左上：2026/portfolio + 署名 */
+.ct__year,
+.ct__credit {
+  position: absolute;
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+}
+
+.ct__year {
+  left: 8.61%;
+  top: 30.77%;
+  font-size: calc(100vw * 20.44 / 1519.54);
+  letter-spacing: 0.01em;
+}
+
+.ct__credit {
+  left: 8.71%;
+  top: 33.66%;
+  font-size: calc(100vw * 12 / 1519.54);
+}
+
+/* 大字：两行，135.11pt / 1519.54 = 8.89vw */
+.ct__title {
+  position: absolute;
+  left: 7.55%;
+  top: 37.6%;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: calc(100vw * 135.11 / 1519.54);
+  font-weight: 700;
+  line-height: 1.186;
+  letter-spacing: -0.01em;
+}
+
+.ct__line {
+  display: block;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+/* 第一行末尾那个实心圆：PDF 里 675.1→772.1（97px） */
+/* 实心圆：脱流，跟着鼠标在整块里跑，大字会绕开它 */
+.ct__orb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6.38%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffffff;
+  /* 常驻 auto：编辑模式要在上面点选。圆落在字右侧的空白处，不挡字的事件 */
+  pointer-events: auto;
+  z-index: 3;
+  will-change: transform;
+  /* translate 留给编辑模式（平滑）；跟手动画写在 transform 上，两者互不干扰 */
+  transition: translate 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 编辑面板打开时圆可被「移动」工具选中拖动；平时屏蔽，免得挡住字的事件 */
+/* 编辑面板开着时给圆一个虚线框，提示这块可以选中拖动 */
+body:has(.editor-panel) .ct__orb {
+  outline: 1px dashed rgba(255, 255, 255, 0.4);
+  display: block;
+}
+
+/* 鼠标进这一块后光标换成圆本身 */
+.ct__sheet.is-orbing,
+.ct__sheet.is-orbing * {
+  cursor: none;
+}
+
+/* 每个字要能单独位移（inline 元素吃不掉 translate） */
+.ct__title .dt-on,
+.ct__title .dt-off {
+  display: inline-block;
+  transition: translate 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct__title .dt-on,
+  .ct__title .dt-off {
+    transition: none;
+  }
+}
+
+/* 左下两行英文 */
+.ct__note {
+  position: absolute;
+  left: 8.35%;
+  top: 86.6%;
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: calc(100vw * 12 / 1519.54);
+  line-height: 1.44;
+}
+
+/* 右下信息区：两条横线夹两行 */
+.ct__info {
+  position: absolute;
+  left: 51.72%;
+  right: 4%;
+  top: 81.9%;
+}
+
+.ct__rule {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.ct__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 0.28em;
+  padding-block: 1.55% 1.9%;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+}
+
+.ct__k {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ct__v {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.ct__row--first .ct__v {
+  text-decoration: underline;
+  text-underline-offset: 0.28em;
+}
+
+.ct__far {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+/* 「广州」在 PDF 里是 14.45pt 粗体，比正文大一级 */
+.ct__row--first .ct__far {
+  font-size: calc(100vw * 14.45 / 1519.54);
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.ct__pin {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  fill: currentColor;
+}
+
+/* 窄屏：比例容器撑不开，退回流式 */
+@media (max-width: 760px) {
+  .ct__sheet {
+    aspect-ratio: auto;
+    padding: 18vw 0 14vw;
+    overflow: visible;
+  }
+
+  .ct__stripes {
+    display: none;
+  }
+
+  .ct__year,
+  .ct__credit,
+  .ct__title,
+  .ct__note,
+  .ct__info {
+    position: static;
+    margin-left: 6vw;
+    margin-right: 6vw;
+  }
+
+  .ct__title {
+    font-size: 12.4vw;
+    line-height: 1.16;
+    margin-top: 10vw;
+    margin-bottom: 14vw;
+  }
+
+  .ct__line {
+    white-space: normal;
+    width: auto;
+    max-width: 100%;
+    text-wrap: balance;
+  }
+
+  /* 行内那几层 span 是打字动画组件渲染的，自带内联 white-space，
+     光改容器压不住，这里必须 !important。 */
+  .ct__line,
+  .ct__line * {
+    white-space: normal !important;
+  }
+
+  .ct__note {
+    font-size: 3.2vw;
+    margin-bottom: 10vw;
+  }
+
+  .ct__info {
+    font-size: 3.4vw;
+  }
+
+  .ct__row {
+    font-size: 3.4vw;
+    padding-block: 4vw 4.6vw;
+  }
+
+  .ct__row--first .ct__far {
+    font-size: 3.8vw;
+  }
+}

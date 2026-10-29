@@ -1,0 +1,99 @@
+/* ==========================================================================
+   字体 / Fonts
+   --------------------------------------------------------------------------
+   全部字体自托管在 public/fonts/（SIL Open Font License，可商用）。
+   不含 Google Fonts 外链，国内访问不卡。
+
+   想换字体：只改下面 @font-face 里的 src 文件名 + base.css 里 --font-display
+   指向的字体名即可。候选字体都已经躺在 public/fonts/ 里，换名不换文件。
+   ========================================================================== */
+
+/* 候选 A：北欧报业感，中性克制（当前使用） */
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  src: url('/fonts/schibsted-grotesk.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 候选 B：硬朗工业感，字面更宽 */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/fonts/archivo.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 候选 C：科技感，字母带古怪细节，适合 AI 属性 */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/space-grotesk.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 候选 D：几何圆润，最接近参考封面 */
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/outfit.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 候选 E：时装感，主张性强 */
+@font-face {
+  font-family: 'Syne';
+  src: url('/fonts/syne.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 候选 F：瑞士中性，最稳 */
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/inter-tight.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 标签 / 数据用等宽 */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 中文标题：方正华思刻线体 Medium
+   原文件 FZHuaSKXTJW-M.TTF（1.97MB），用 .tools/ttf2woff.mjs 转成 WOFF（1.22MB）
+   声明 100 900 覆盖全部字重，避免浏览器给细笔画字体做「伪粗体」 */
+@font-face {
+  font-family: 'FZ HuaSi KeXian';
+  src: url('/fonts/fz-huasi-kexian.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 手写体：About Me 连笔字。
+   RedSky Regular，字体文件在 public/fonts/redsky-regular.ttf。 */
+@font-face {
+  font-family: 'About Script';
+  src: url('/fonts/redsky-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 中文黑体：思源黑体（Noto Sans SC 简体子集，1.14MB）。
+   拉丁字体（Outfit 等）没有中文字形，中文只能落到系统字体；
+   这里给几处中文小标签一个真正的几何无衬线，字面比苹方更收敛、更接近 Outfit 的气质。 */
+/* 思源黑体改成 101 个 unicode-range 分片，见 src/styles/noto-sans-sc.css，
+   放在 public/fonts/noto-sans-sc/；浏览器只下当前页面用到的片。 */

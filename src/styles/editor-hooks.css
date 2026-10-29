@@ -1,0 +1,107 @@
+
+/* ==========================================================================
+   编辑工具栏（?edit）可调变量的钩子
+   默认值全部等于原设计，不加变量时视觉零变化
+   ========================================================================== */
+
+/* 区块上下留白倍率 */
+.profile {
+  padding-block: calc(clamp(70px, 8vw, 130px) * var(--section-space, 1))
+    calc(clamp(60px, 7vw, 120px) * var(--section-space, 1));
+}
+
+.projects {
+  padding-block: calc(clamp(60px, 7vw, 120px) * var(--section-space, 1))
+    calc(clamp(70px, 8vw, 140px) * var(--section-space, 1));
+}
+
+.cap,
+.ai {
+  padding-block: calc(clamp(60px, 6vw, 110px) * var(--section-space, 1))
+    calc(clamp(70px, 8vw, 140px) * var(--section-space, 1));
+}
+
+/* 封面大字的字距由变量控制 */
+.cover__word {
+  letter-spacing: var(--tracking-display, -0.045em);
+}
+
+/* 图片饱和度 / 放大 */
+.project__media img,
+.pcard__media img,
+.profile__portrait img,
+.hero__scene-img,
+.cover__scene-img {
+  filter: saturate(var(--img-saturation, 1));
+}
+
+/* ---- 模块级底色 / 文字色：走可继承的 --sec-* 变量 ----
+   这些区块原来把颜色写死在子元素上，模块级 color 传不进去，这里统一收口 */
+.marquee {
+  background: var(--sec-bg, var(--ink));
+}
+
+.marquee__item {
+  color: var(--sec-ink, rgba(243, 240, 234, 0.82));
+}
+
+/* 小圆点跟随文字色 / 强调色，不再写死白色 */
+.marquee__item i {
+  background: var(--sec-accent, var(--sec-ink, currentColor));
+}
+
+.statement {
+  background: var(--sec-bg, var(--paper-2));
+  color: var(--sec-ink, var(--ink));
+}
+
+[data-theme='abcd'] .statement {
+  background: var(--sec-bg, #000);
+  color: var(--sec-ink, #fff);
+}
+
+.statement__meta,
+.statement__quote cite {
+  color: var(--sec-ink-2, var(--ink-3));
+}
+
+[data-theme='abcd'] .statement__meta,
+[data-theme='abcd'] .statement__quote cite {
+  color: var(--sec-ink-2, rgba(255, 255, 255, 0.5));
+}
+
+.contact {
+  background: var(--sec-bg, var(--ink));
+  color: var(--sec-ink, var(--paper));
+}
+
+.contact__title {
+  color: var(--sec-ink, inherit);
+}
+
+.cover {
+  background: var(--sec-bg, #0a0a0a);
+  color: var(--sec-ink, var(--paper));
+}
+
+.project__media img,
+.pcard__media img {
+  transform: scale(var(--img-scale, 1));
+}
+
+.project:hover .project__media img {
+  transform: scale(calc(var(--img-scale, 1) * 1.028));
+}
+
+.pcard:hover .pcard__media img {
+  transform: scale(calc(var(--img-scale, 1) * 1.035));
+}
+
+/* 留白倍率影响下的分区间距 */
+.projects__list {
+  gap: calc(clamp(56px, 7vw, 124px) * var(--section-space, 1));
+}
+
+.cv {
+  margin-top: calc(clamp(50px, 6vw, 104px) * var(--section-space, 1));
+}

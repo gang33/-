@@ -1,0 +1,111 @@
+/* 掉落文字（FallingText）：容器铺满父级，内部文字先按流排好，
+   点一下之后交给 matter-js 变成物理碎片，拖拽 / 甩动 / 到时飞回原位。 */
+.falling-text {
+  --falling-text-accent: #5b8cff;
+  --falling-text-accent-ink: #ffffff;
+  --falling-text-tile: linear-gradient(180deg, #3a3644 0%, #27242f 100%);
+  --falling-text-tile-edge: rgba(255, 255, 255, 0.07);
+  --falling-text-tile-highlight: rgba(255, 255, 255, 0.12);
+  --falling-text-tile-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.7);
+  --falling-text-tile-ink: #f4f4f5;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+
+.falling-text[data-trigger='click'] {
+  cursor: pointer;
+}
+
+.falling-text[data-trigger='hover'] {
+  cursor: default;
+}
+
+.falling-text__text {
+  position: relative;
+  margin: 0;
+  text-align: center;
+  text-wrap: balance;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.6;
+  user-select: none;
+}
+
+/* 掉落期间把文字层从定位祖先里摘出去：
+   碎片是绝对定位的，一旦文字层（position: relative）还当着 offsetParent，
+   而它自己又会因为子元素全部脱流而塌宽，碎片的坐标系就跟静止时算的那套对不上，
+   点下去的瞬间会整体错一段 —— 这里让它回到 static，碎片的 offsetParent 直接落到
+   最外层的 .falling-text，与 fall() 里量光标的基准一致。 */
+.falling-text[data-phase] .falling-text__text {
+  position: static;
+}
+
+.falling-text[data-phase='falling'] .falling-text__text,
+.falling-text[data-phase='restoring'] .falling-text__text {
+  pointer-events: none;
+}
+
+.falling-text__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.falling-text__piece {
+  display: inline-block;
+  white-space: nowrap;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease,
+    text-shadow 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.falling-text__piece[data-highlight],
+.falling-text__piece.highlighted {
+  color: var(--falling-text-accent);
+}
+
+.falling-text__piece--tile {
+  padding: 0.18em 0.42em;
+  border-radius: 0.4em;
+  color: var(--falling-text-tile-ink);
+  background: var(--falling-text-tile);
+  box-shadow:
+    inset 0 1px 0 var(--falling-text-tile-highlight),
+    0 0 0 1px var(--falling-text-tile-edge),
+    var(--falling-text-tile-shadow);
+}
+
+.falling-text__piece--tile[data-highlight],
+.falling-text__piece--tile.highlighted {
+  color: var(--falling-text-accent-ink);
+  background: var(--falling-text-accent);
+  box-shadow: var(--falling-text-tile-shadow);
+}
+
+.falling-text--wireframes .falling-text__piece {
+  color: var(--falling-text-tile-ink);
+  background-color: rgba(0, 0, 0, 0.16);
+  border: 1px solid currentColor;
+  border-radius: 0.35em;
+}
+
+.falling-text--wireframes .falling-text__piece[data-highlight],
+.falling-text--wireframes .falling-text__piece.highlighted {
+  color: var(--falling-text-accent);
+  background-color: rgba(0, 0, 0, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .falling-text__piece {
+    transition: none;
+  }
+}

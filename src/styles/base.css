@@ -1,0 +1,413 @@
+/* ==========================================================================
+   Foundations — Swedish / International Typographic Style
+   Palette: paper, ink, hairlines, one muted Falu red accent
+   ========================================================================== */
+
+:root {
+  --paper: #f3f0ea;
+  --paper-2: #e8e4db;
+  --ink: #12110f;
+  --ink-2: #56524b;
+  --ink-3: #8b867d;
+  --line: rgba(18, 17, 15, 0.13);
+  --line-2: rgba(18, 17, 15, 0.3);
+  --accent: #9c3a26;
+  --accent-lt: #c15b3f;
+  --paper-line: rgba(243, 240, 234, 0.16);
+
+  --max: 1700px;
+  /* 版心：左右各 5.5%，与 Illustrator 稿（1519.54pt 页宽里 83.5pt 边距）一致 */
+  --gutter: clamp(20px, 5.5vw, 96px);
+  --col-gap: clamp(14px, 1.6vw, 28px);
+
+  /* ---------------- 字体 ----------------
+     ★ 换字体只需改这一处：把 --font-display / --font-sans 的第一个字体名
+       换成下面候选之一（字体文件已在 public/fonts/ 里备好）：
+       'Schibsted Grotesk' | 'Archivo' | 'Space Grotesk' | 'Outfit' | 'Syne' | 'Inter Tight'
+     中文没有自托管字体，走系统黑体栈（苹果→苹方，Windows→微软雅黑，鸿蒙→HarmonyOS Sans）
+     -------------------------------------- */
+
+  --font-display: 'Schibsted Grotesk', 'Inter Tight', -apple-system, 'Segoe UI',
+    'Helvetica Neue', Arial, 'PingFang SC', 'HarmonyOS Sans SC',
+    'Source Han Sans SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+
+  /* 只有封面那个 Portfolio 用的字体（方正华思刻线体） */
+  --font-cover: 'FZ HuaSi KeXian', 'Schibsted Grotesk', 'Helvetica Neue', Arial,
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  --font-sans: 'Schibsted Grotesk', 'Inter Tight', -apple-system, 'Segoe UI',
+    'Helvetica Neue', Arial, 'PingFang SC', 'HarmonyOS Sans SC',
+    'Source Han Sans SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+
+  --font-cjk: 'PingFang SC', 'HarmonyOS Sans SC', 'Source Han Sans SC',
+    'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas,
+    'Courier New', monospace;
+
+  /* About Me 的连笔手写：文件在 public/fonts/（Alex Brush 近似 RedSky） */
+  --font-script: 'About Script', 'Alex Brush', 'Segoe Script', cursive;
+
+  /* 大标题统一的字距，换字体后一般也要微调 */
+  --tracking-display: -0.045em;
+
+  --fs-display: clamp(44px, 8vw, 138px);
+  --fs-h2: clamp(30px, 3.6vw, 62px);
+  --fs-h3: clamp(22px, 2.2vw, 40px);
+  --fs-body: clamp(14px, 0.95vw, 17px);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+/* 大标题 / 标题类统一用 --font-display（换字体时只影响这一层） */
+.cover__book,
+.cover__role,
+.sec-head__title,
+.profile__name,
+.profile__lead,
+.statement__quote,
+.contact__title,
+.cap__title,
+.ai__title,
+.project__title,
+.pcard__title,
+.cv__org {
+  font-family: var(--font-display);
+}
+
+/* 封面 Portfolio：单独的字体变量，改 --font-cover 只影响这一处 */
+.cover__word,
+.typeword {
+  font-family: var(--font-cover);
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+section[id] {
+  scroll-margin-top: clamp(64px, 8vh, 96px);
+}
+
+/* ---------- layout ---------- */
+
+.shell {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+/* ---------- type helpers ---------- */
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* ---------- scroll progress ---------- */
+
+.progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* ---------- reveal ---------- */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition: opacity 0.95s var(--ease), transform 0.95s var(--ease);
+  will-change: opacity, transform;
+}
+
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+[data-delay='1'] {
+  transition-delay: 0.08s;
+}
+[data-delay='2'] {
+  transition-delay: 0.16s;
+}
+[data-delay='3'] {
+  transition-delay: 0.24s;
+}
+[data-delay='4'] {
+  transition-delay: 0.32s;
+}
+
+/* ---------- grain ---------- */
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 160px 160px;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.95em 1.6em;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: clamp(12px, 0.9vw, 14px);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  transition: background 0.5s var(--ease), color 0.5s var(--ease),
+    border-color 0.5s var(--ease), transform 0.5s var(--ease);
+}
+
+.btn span {
+  transition: transform 0.5s var(--ease);
+}
+
+.btn--solid {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.btn--solid:hover {
+  background: var(--accent-lt);
+  color: var(--paper);
+}
+
+.btn--solid:hover span {
+  transform: translate(2px, -2px);
+}
+
+.btn--line {
+  border-color: rgba(243, 240, 234, 0.42);
+  color: var(--paper);
+}
+
+.btn--line:hover {
+  border-color: var(--paper);
+  background: rgba(243, 240, 234, 0.08);
+}
+
+/* ---------- section head ---------- */
+
+.sec-head {
+  display: grid;
+  grid-template-columns: 3fr 9fr;
+  column-gap: var(--col-gap);
+  align-items: start;
+  border-top: 1px solid var(--line-2);
+  padding-top: clamp(14px, 1.6vw, 24px);
+}
+
+.sec-head__meta {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(12px, 1.4vw, 22px);
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.sec-head__index {
+  color: var(--accent);
+}
+
+.sec-head__main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 70px);
+}
+
+.sec-head__title {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+.sec-head__note {
+  max-width: 32ch;
+  padding-bottom: 0.5em;
+  font-size: clamp(12px, 0.85vw, 14px);
+  line-height: 1.85;
+  color: var(--ink-3);
+  text-align: right;
+}
+
+/* ---------- marquee ---------- */
+
+.marquee {
+  /* 编辑模式「跑马灯」面板可调：字号倍率 / 字距 / 滚动一圈的秒数 / 字体 */
+  --mq-scale: 1;
+  --mq-ls: 0.2em;
+  --mq-dur: 46s;
+  /* 由 Marquee.jsx 按「铺满一屏」算出，词少时把词与词的空白撑开 */
+  --mq-spread: 0px;
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: clamp(13px, 1.2vw, 19px);
+}
+
+/* 屏外探针：只放一份词表、不带自动撑开的间距，用来量内容本身多宽 */
+.marquee__probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: max-content;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.marquee__probe .marquee__item {
+  padding-inline: clamp(18px, 1.6vw, 30px);
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee var(--mq-dur, 46s) linear infinite;
+}
+
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(18px, 1.6vw, 30px);
+  padding-inline: calc(clamp(18px, 1.6vw, 30px) + var(--mq-spread, 0px));
+  font-family: var(--mq-ff, inherit);
+  font-size: calc(clamp(11px, 0.85vw, 14px) * var(--mq-scale, 1));
+  letter-spacing: var(--mq-ls, 0.2em);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(243, 240, 234, 0.82);
+}
+
+.marquee__item i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-lt);
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ---------- motion preferences ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}

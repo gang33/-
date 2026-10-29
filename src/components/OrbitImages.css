@@ -1,0 +1,198 @@
+.orbit-container {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.orbit-container[data-draggable] {
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+}
+
+.orbit-container[data-dragging],
+.orbit-container[data-dragging] * {
+  cursor: grabbing;
+}
+
+.orbit-path-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.orbit-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform, opacity;
+}
+
+.orbit-container[data-intro] .orbit-item {
+  opacity: 0;
+}
+
+.orbit-item[data-clickable] {
+  cursor: pointer;
+}
+
+.orbit-item-inner {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--orbit-radius, 0px);
+  box-shadow: 0 calc(var(--orbit-shadow, 0) * 16px) calc(var(--orbit-shadow, 0) * 36px)
+    rgba(0, 0, 0, calc(var(--orbit-shadow, 0) * 0.45));
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 图下面那两行注释（作品名 + 年份/服务内容），文案来自作品文字简介.pdf。
+   .orbit-item 每帧被 scale(var(--orbit-s)) 缩放，这里用 1/var(--orbit-s) 反向抵消，
+   字号才能稳定在 12px，不随前后远近变大变小。 */
+.orbit-item-caption {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + var(--oc-gap, 10px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-lead, 3px);
+  width: max-content;
+  max-width: 240px;
+  margin-left: var(--oc-dx, 0px);
+  margin-top: calc(var(--oc-dy, 0px) + var(--oc-item-dy, 0px));
+  transform: translateX(-50%) scale(calc(1 / var(--orbit-s, 1)));
+  transform-origin: top center;
+  text-align: center;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.orbit-item-caption__name {
+  font-size: var(--oc-size, 12px);
+  letter-spacing: 0.02em;
+}
+
+.orbit-item-caption__meta {
+  font-size: var(--oc-size, 12px);
+  letter-spacing: 0.02em;
+  opacity: var(--oc-op, 0.55);
+}
+
+.orbit-item:hover .orbit-item-inner,
+.orbit-item:focus-visible .orbit-item-inner {
+  transform: scale(var(--orbit-hover-scale, 1));
+}
+
+.orbit-item:focus-visible {
+  outline: none;
+}
+
+.orbit-item:focus-visible .orbit-item-inner {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.orbit-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.orbit-center-content {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.orbit-center-content > * {
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-item-inner {
+    transition: none;
+  }
+}
+
+/* 窄屏：轨道只占屏宽的一部分，注释按屏宽收窄，避免右侧被 body 的
+   overflow-x: hidden 静默裁掉。 */
+@media (max-width: 640px) {
+  .orbit-item-caption {
+    max-width: 42vw;
+  }
+
+  .orbit-item-caption__name,
+  .orbit-item-caption__meta {
+    font-size: min(var(--oc-size, 12px), 11px);
+  }
+}
+
+/* ---------------- 窄屏的作品网格（替代椭圆轨道） ----------------
+   手机屏宽 375、六张图各 90px 沿轨道排，周长不够，必然互相压住。
+   ≤640px 时 ProjectOrbit 直接渲染这个网格。 */
+.orbit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orbit-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.orbit-grid__media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--line) 22%, transparent);
+  overflow: hidden;
+}
+
+.orbit-grid__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.orbit-grid__name {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.orbit-grid__meta {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  opacity: 0.55;
+}

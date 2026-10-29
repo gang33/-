@@ -1,0 +1,621 @@
+/* ==========================================================================
+   首屏 · 会翻的作品集封面
+   结构：.bk-stage（高 260svh，只提供滚动行程）> .bk-pin（sticky 钉住）
+         > .bk-scene > .bk-book（rotate 倾斜）
+             .bk-page   内页（封面翻开后露出的「个人经历」首页）
+             .bk-shade  封面掀起来投在内页上的暗带
+             .bk-persp  透视容器（perspective-origin 必须落在装订轴上）
+               .bk-cover  双面亚克力片，绕装订轴 rotateY
+             .bk-mech   静态装订环（压在最上层，不跟着翻）
+   注意：.bk-pin 上不要写 perspective —— 一旦祖先有透视，
+        .bk-persp 的 perspective 会被顶掉，3D 直接压成沙漏。
+   ========================================================================== */
+
+.bk-stage {
+  position: relative;
+  height: calc(100svh + 160svh);
+  background: #000;
+}
+
+.bk-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 52% 42%, rgba(38, 34, 28, 0.42) 0%, rgba(0, 0, 0, 0) 68%),
+    #000;
+}
+
+/* ---------------- 顶部联系方式细条 ---------------- */
+.bk-topbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 6;
+  padding: clamp(76px, 9vh, 108px) clamp(16px, 4vw, 64px) clamp(14px, 2.4vh, 28px);
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(12px, 3vw, 40px);
+  font-size: clamp(8px, 0.7vw, 11px);
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.66);
+  pointer-events: none;
+}
+
+.bk-topbar b {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.36);
+  margin-right: 0.55em;
+}
+
+.bk-topbar a {
+  pointer-events: auto;
+  transition: color 0.3s var(--ease);
+}
+
+.bk-topbar a:hover {
+  color: #fff;
+}
+
+/* ---------------- 舞台 ---------------- */
+.bk-scene {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+}
+
+.bk-book {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  /* --bw / --bh 由 JS 量出后写入，内页排版全部按书宽等比缩放 */
+}
+
+/* ---------------- 内页 ---------------- */
+.bk-page {
+  position: absolute;
+  left: 6.6%;
+  top: 1.2%;
+  right: 0.8%;
+  bottom: 1.4%;
+  border-radius: calc(var(--bw) * 0.004);
+  overflow: hidden;
+  background: #f5f3ee;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.42) inset,
+    0 34px 74px -26px rgba(0, 0, 0, 0.86),
+    0 8px 20px rgba(0, 0, 0, 0.42);
+}
+
+/* 纸的纤维与压痕，避免「一块死白的 CSS 方块」 */
+.bk-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    93deg,
+    rgba(120, 110, 90, 0.05) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+.bk-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    rgba(196, 188, 170, 0.16) 0%,
+    rgba(196, 188, 170, 0.05) 55%,
+    rgba(170, 162, 146, 0.14) 100%
+  );
+}
+
+/* 装订孔 */
+.bk-page__holes {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2.4%;
+}
+
+.bk-page__holes i {
+  position: absolute;
+  left: 50%;
+  width: calc(var(--bw) * 0.0072);
+  height: calc(var(--bw) * 0.0072);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 32%, #d3cfc4 0%, #bcb7ab 62%, #a49f94 100%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4) inset,
+    0 -1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.bk-page__holes i:nth-child(1) {
+  top: 17.5%;
+}
+.bk-page__holes i:nth-child(2) {
+  top: 39%;
+}
+.bk-page__holes i:nth-child(3) {
+  top: 60.5%;
+}
+.bk-page__holes i:nth-child(4) {
+  top: 82%;
+}
+
+/* 内页内容：--reveal 由 JS 写入（0~1），逐层浮出。
+   两栏：左边是「我是谁」，右边是「我做过什么 / 怎么联系」，
+   这样翻开后整页纸是满的，不会右边空一大块。 */
+.bk-page__inner {
+  position: absolute;
+  left: 7.2%;
+  right: 5.4%;
+  top: 7.6%;
+  bottom: 8%;
+  display: grid;
+  grid-template-columns: 1fr 0.74fr;
+  grid-template-rows: auto 1fr;
+  column-gap: calc(var(--bw) * 0.05);
+  row-gap: calc(var(--bw) * 0.038);
+  color: #24221e;
+}
+
+/* 页眉横跨两栏，像真的印在纸上的一条：
+   「02 — PROFILE」在左端，「2022 — 2026」在右端 */
+.bk-page__topline {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(var(--bw) * 0.0098);
+  letter-spacing: 0.28em;
+  color: rgba(36, 34, 30, 0.4);
+  opacity: clamp(0, calc(var(--reveal, 0) * 2.1 - 0.12), 1);
+}
+
+.bk-page__col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bk-page__col--main {
+  opacity: clamp(0, calc(var(--reveal, 0) * 2.1 - 0.18), 1);
+  transform: translate3d(0, calc((1 - var(--reveal, 0)) * 16px), 0);
+}
+
+.bk-page__col--side {
+  padding-left: calc(var(--bw) * 0.032);
+  border-left: 1px solid rgba(36, 34, 30, 0.14);
+  opacity: clamp(0, calc(var(--reveal, 0) * 1.9 - 0.5), 1);
+  transform: translate3d(0, calc((1 - var(--reveal, 0)) * 22px), 0);
+}
+
+.bk-page__sideHead {
+  margin: calc(var(--bw) * 0.026) 0 calc(var(--bw) * 0.011);
+  font-size: calc(var(--bw) * 0.0076);
+  letter-spacing: 0.24em;
+  color: rgba(36, 34, 30, 0.36);
+}
+
+.bk-page__sideHead:first-child {
+  margin-top: 0;
+}
+
+/* 右栏：这本作品集自己的目录，四行均分右栏高度，像真的印在纸上 */
+.bk-page__toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+
+.bk-page__toc li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: center;
+  align-items: baseline;
+  column-gap: calc(var(--bw) * 0.014);
+  padding: calc(var(--bw) * 0.009) 0;
+  border-top: 1px solid rgba(36, 34, 30, 0.13);
+}
+
+.bk-page__toc li:last-child {
+  border-bottom: 1px solid rgba(36, 34, 30, 0.13);
+}
+
+.bk-page__toc span {
+  font-size: calc(var(--bw) * 0.0074);
+  letter-spacing: 0.14em;
+  color: rgba(36, 34, 30, 0.38);
+}
+
+.bk-page__toc b {
+  font-size: calc(var(--bw) * 0.0145);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.bk-page__toc em {
+  grid-column: 2;
+  font-style: normal;
+  font-size: calc(var(--bw) * 0.0082);
+  color: rgba(36, 34, 30, 0.46);
+}
+
+.bk-page__eyebrow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: calc(var(--bw) * 0.044);
+  font-size: calc(var(--bw) * 0.0098);
+  letter-spacing: 0.28em;
+  color: rgba(36, 34, 30, 0.4);
+}
+
+.bk-page__name {
+  margin: 0 0 calc(var(--bw) * 0.014);
+  font-family: var(--font-cover);
+  font-weight: 500;
+  font-size: calc(var(--bw) * 0.088);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+}
+
+.bk-page__name em {
+  display: block;
+  margin-top: calc(var(--bw) * 0.012);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: calc(var(--bw) * 0.0092);
+  letter-spacing: 0.24em;
+  color: rgba(36, 34, 30, 0.42);
+}
+
+.bk-page__lead {
+  margin: 0 0 calc(var(--bw) * 0.032);
+  font-size: calc(var(--bw) * 0.0165);
+  line-height: 1.62;
+  color: rgba(36, 34, 30, 0.78);
+}
+
+.bk-page__facts {
+  display: flex;
+  gap: calc(var(--bw) * 0.036);
+  list-style: none;
+  margin: 0 0 calc(var(--bw) * 0.026);
+  padding: 0;
+}
+
+.bk-page__facts li {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  column-gap: 2px;
+  padding-left: calc(var(--bw) * 0.011);
+  border-left: 1px solid rgba(36, 34, 30, 0.24);
+}
+
+.bk-page__facts b {
+  font-size: calc(var(--bw) * 0.026);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bk-page__facts span {
+  font-size: calc(var(--bw) * 0.013);
+  color: rgba(36, 34, 30, 0.6);
+}
+
+.bk-page__facts em {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: calc(var(--bw) * 0.0076);
+  letter-spacing: 0.12em;
+  color: rgba(36, 34, 30, 0.42);
+}
+
+.bk-page__body {
+  margin: auto 0 0;
+  max-width: 46ch;
+  font-size: calc(var(--bw) * 0.0104);
+  line-height: 1.95;
+  color: rgba(36, 34, 30, 0.56);
+}
+
+.bk-page__foot {
+  margin: auto 0 0;
+  padding-top: calc(var(--bw) * 0.018);
+  font-size: calc(var(--bw) * 0.0076);
+  letter-spacing: 0.22em;
+  color: rgba(36, 34, 30, 0.32);
+}
+
+/* ---------------- 掀起的封面投下的暗带 ---------------- */
+.bk-shade {
+  position: absolute;
+  left: 6.6%;
+  top: 1.2%;
+  bottom: 1.4%;
+  width: 46%;
+  transform-origin: 0 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.28) 26%,
+    rgba(0, 0, 0, 0.1) 58%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  will-change: opacity, transform;
+}
+
+/* ---------------- 会翻的封面 ---------------- */
+.bk-persp {
+  position: absolute;
+  inset: 0;
+  perspective: 2000px;
+  perspective-origin: 6.64% 50%;
+}
+
+.bk-cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: 6.64% 50%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.bk-cover__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: calc(var(--bw) * 0.004);
+}
+
+.bk-cover__face--front {
+  object-fit: fill;
+  width: 100%;
+  height: 100%;
+}
+
+/* 翻过去之后看到的是亚克力的背面：雾面塑料 + 一点点冷灰 */
+.bk-cover__face--back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(96deg, rgba(255, 255, 255, 0.9) 0%, rgba(232, 230, 222, 0.94) 48%, rgba(214, 212, 204, 0.96) 100%),
+    #e9e7e0;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.12) inset,
+    0 30px 60px -20px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------------- 印在封面上的字 ----------------
+   坐标与 cover-flat.png 同一套坐标系，全部以 --bw 等比缩放，
+   所以换分辨率、换屏幕宽度都不用重新量。 */
+.bk-print {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  backface-visibility: hidden;
+  transform: translateZ(1px);
+  color: #1d1c1a;
+}
+
+.bk-print__item {
+  position: absolute;
+  z-index: 2;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: calc(var(--bw) * var(--s, 0.01));
+  font-weight: var(--w, 400);
+  color: var(--c, #1d1c1a);
+}
+
+.bk-print__item.is-mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.bk-print__item.is-display {
+  font-family: 'Outfit', var(--font-display);
+}
+
+.bk-print__item.is-cover {
+  font-family: var(--font-cover);
+}
+
+.bk-print__big {
+  position: absolute;
+  z-index: 1;
+  font-family: 'Outfit', var(--font-display);
+  font-size: calc(var(--bw) * var(--s, 0.235));
+  font-weight: var(--w, 700);
+  letter-spacing: calc(var(--bw) * var(--ls, -0.024));
+  line-height: 0.78;
+  white-space: nowrap;
+  color: #171614;
+}
+
+/* 黄色美纹胶带：手作感的点睛，别删 */
+.bk-print__tape {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.1em;
+  font-family: var(--font-cjk);
+  font-weight: 500;
+  font-size: calc(var(--bh, var(--bw)) * var(--ts, 0.19) / 6.2);
+  width: calc(var(--bw) * var(--s, 0.04));
+  height: calc(var(--bh, var(--bw)) * var(--ts, 0.19));
+  line-height: 1.1;
+  color: #4a3d0a;
+  background: linear-gradient(100deg, #ffe14d 0%, #ffd21f 46%, #f5c000 100%);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.14),
+    0 -1px 1px rgba(255, 255, 255, 0.32) inset;
+  transform: rotate(var(--rot, -48deg));
+  transform-origin: 50% 50%;
+  opacity: 0.96;
+}
+
+/* 亚克力切边：只在翻起来之后才出现的那一道细高光。
+   平放时必须为 0，否则会和照片里真实的书边打架。 */
+.bk-cover__edge {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  transform: translateZ(0.5px);
+  opacity: calc(var(--turn, 0) * 1.6);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.62) 18%,
+    rgba(255, 255, 255, 0.22) 52%,
+    rgba(255, 255, 255, 0.5) 84%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  pointer-events: none;
+}
+
+/* ---------------- 静态装订环 ---------------- */
+.bk-mech {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------------- 底部提示 ---------------- */
+.bk-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(16px, 3.2vh, 36px);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: clamp(9px, 0.72vw, 11px);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 两段提示轮流出现：开场「掀开封面」，翻到后段「继续向下」。
+   中间的翻页过程不放字，让画面干净。 */
+.bk-hint__a,
+.bk-hint__line {
+  opacity: clamp(0, calc(1 - var(--p, 0) * 12), 1);
+}
+
+.bk-hint__b {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: clamp(0, calc((var(--p, 0) - 0.62) * 6), 1);
+  white-space: nowrap;
+}
+
+.bk-hint__line {
+  display: block;
+  width: 56px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.7);
+  animation: bk-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes bk-pulse {
+  0%,
+  100% {
+    transform: scaleX(0.25);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ---------------- 窄屏 / 手机 ----------------
+   竖屏里 16:9 的书按宽度撑满也只有一条，内页那套排版（四个数据 + 目录）
+   在 300 多像素宽里根本读不了。所以手机上内页只留「姓名 + 职位 + 一句话」，
+   其余信息交给下面正常排版的「个人经历」段。 */
+@media (max-width: 900px) {
+  .bk-stage {
+    height: calc(100svh + 110svh);
+  }
+
+  .bk-topbar {
+    display: none;
+  }
+
+  .bk-hint {
+    letter-spacing: 0.18em;
+  }
+}
+
+@media (max-width: 720px) {
+  .bk-scene {
+    top: 47%;
+  }
+
+  .bk-page__inner {
+    left: 9%;
+    right: 8%;
+    top: 27%;
+    bottom: 11%;
+    display: block;
+  }
+
+  .bk-page__topline,
+  .bk-page__facts,
+  .bk-page__body,
+  .bk-page__col--side {
+    display: none;
+  }
+
+  /* 手机上这页就只放「名字 + 身份」：纸太窄，多一行都会挤爆 */
+  .bk-page__lead {
+    display: none;
+  }
+
+  .bk-page__name {
+    margin: 0;
+    font-size: calc(var(--bw) * 0.215);
+    line-height: 0.94;
+    letter-spacing: 0.01em;
+  }
+
+  .bk-page__name em {
+    margin-top: calc(var(--bw) * 0.028);
+    font-size: calc(var(--bw) * 0.036);
+    letter-spacing: 0.14em;
+    line-height: 1.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-hint__line {
+    animation: none;
+  }
+}

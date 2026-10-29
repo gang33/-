@@ -1,0 +1,135 @@
+/* 品牌项目经验（ProjectExperience.jsx）
+   版式来自 `_素材/个人经历/品牌项目经验.pdf`：
+   页 1519.54 × 949.13，下面所有坐标都是它的百分比。 */
+
+.px {
+  background: #fff;
+  color: #000;
+}
+
+.px__sheet {
+  position: relative;
+  width: 100%;
+  /* 锁死版面比例，宽度变化时整体等比缩放 */
+  aspect-ratio: 1519.54 / 949.13;
+  overflow: hidden;
+}
+
+/* ---------- 顶部四条黑带 ---------- */
+.px__bars i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: block;
+  background: #000;
+  /* 高度由 JS 逐条撑开；初始为 0，靠滚动长出来 */
+  transform-origin: top;
+}
+
+/* ---------- 七条贯穿全宽的细线 ---------- */
+.px__rule {
+  position: absolute;
+  left: 0.13%;
+  right: 0.13%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* ---------- 五段大字 ---------- */
+.px__word {
+  position: absolute;
+  /* 位移与透明度都由 JS 每帧写（滚轮驱动 + 阻尼），这里不设 transition */
+  opacity: 0.15;
+  will-change: opacity, transform;
+}
+
+.px__word {
+  position: absolute;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 4.643vw; /* 70.55 / 1519.54 */
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.px__word--en {
+  font-family: var(--font-display, 'Helvetica Neue', Arial, sans-serif);
+  font-weight: 400;
+}
+
+.px__word--cn {
+  font-family: var(--font-cn, 'PingFang SC', 'Microsoft YaHei', sans-serif);
+  font-weight: 500;
+}
+
+/* ---------- 右下两段说明 ---------- */
+.px__notes {
+  position: absolute;
+  left: 62%;
+  top: 77.6%;
+  width: 20.4%;
+  font-size: 12px;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.px__notes p {
+  margin: 0 0 1.2em;
+  /* 断行照 PDF 原稿写死，不交给浏览器自动折行 */
+  white-space: pre-line;
+}
+
+.px__notes p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .px__notes {
+    font-size: 9px;
+  }
+}
+
+/* ---------------- 窄屏：放弃 PDF 的绝对定位 ----------------
+   这一块是按 PDF 页比例锁死的（1519.54 × 949.13）。手机宽 390 时整张
+   「纸」只有 243px 高，五个大字却各按百分比散在不同位置，字号又只剩
+   18px —— 叠在一起看着就是乱的。窄屏改成顺序堆叠，滚动驱动的横向
+   散开动画一并关掉（JS 每帧写 transform / opacity，这里 !important 压住）。 */
+@media (max-width: 720px) {
+  .px__sheet {
+    aspect-ratio: auto;
+    padding: 26px 20px 30px;
+    overflow: visible;
+  }
+
+  /* 四条黑带和七条贯穿细线是按整页比例画的，窄屏没有意义 */
+  .px__bars,
+  .px__rule {
+    display: none;
+  }
+
+  .px__word {
+    position: static;
+    display: block;
+    margin: 0 0 2px;
+    width: auto;
+    font-size: clamp(30px, 10.5vw, 44px);
+    line-height: 1.06;
+    letter-spacing: -0.01em;
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .px__notes {
+    position: static;
+    width: auto;
+    margin-top: 20px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .px__notes p {
+    white-space: normal;
+  }
+}

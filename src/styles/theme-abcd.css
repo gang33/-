@@ -1,0 +1,363 @@
+/* ==========================================================================
+   主题 A — ABCD（参考 A Black Cover Design）
+   --------------------------------------------------------------------------
+   特征：纯黑白、无暖色、全大写宣言、等宽小标签、黑色发丝线、年份→条目表格、
+        ︎︎︎ 箭头链接、无阴影 / 无圆角 / 无渐变、图不加框。
+   通过 <html data-theme="abcd"> 启用；原版主题是 data-theme="classic"
+   ========================================================================== */
+
+[data-theme='abcd'] {
+  --paper: #ffffff;
+  --paper-2: #6e603f;
+  --ink: #292724;
+  --ink-2: #4b4b4b;
+  --ink-3: #8d8d8d;
+  --line: rgba(41, 39, 36, 0.14);
+  --line-2: rgba(41, 39, 36, 0.55);
+  --paper-line: rgba(255, 255, 255, 0.22);
+  --accent: #292724;
+  --accent-lt: #ffffff;
+
+  /* 用户选定：版心更宽、栅格更紧、标题回 Schibsted、项目图轻微去饱和 */
+  --max: 1900px;
+  --col-gap: 9px;
+  --img-saturation: 0.7;
+  --tracking-display: -0.065em;
+  --font-display: 'Schibsted Grotesk', 'Inter Tight', -apple-system, 'Segoe UI',
+    'Helvetica Neue', Arial, 'PingFang SC', 'HarmonyOS Sans SC',
+    'Source Han Sans SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+
+  --tracking-display: -0.035em;
+}
+
+/* ---------- 模块级定制：个人经历整块压黑 ---------- */
+
+[data-theme='abcd'] .profile {
+  background: #000000;
+  color: #d6d6d6;
+  --ink: #d6d6d6;
+  --ink-2: rgba(214, 214, 214, 0.72);
+  --ink-3: rgba(214, 214, 214, 0.46);
+  --line: rgba(214, 214, 214, 0.16);
+  --line-2: rgba(214, 214, 214, 0.5);
+  --accent: #ffffff;
+}
+
+[data-theme='abcd'] .profile__portrait {
+  background: #171614;
+}
+
+[data-theme='abcd'] .profile__portrait-tag {
+  background: #ffffff;
+  color: #000000;
+}
+
+[data-theme='abcd'] .profile__contact {
+  background: transparent;
+}
+
+[data-theme='abcd'] .profile__role {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+[data-theme='abcd'] .profile__contact a:hover {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme='abcd'] .profile__stat-num i,
+[data-theme='abcd'] .profile__caption,
+[data-theme='abcd'] .profile__stat-cap {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- 模块级定制：关键词滚动条（黑白反相） ----------
+   注意：黑底 + 黑字会互相抵消（曾经出现过文字整条看不见），
+   所以底色、文字色、圆点色必须成组修改，改一个就要跟着改另外两个。 */
+
+/* 关键词滚动条：荧光黄底 + 黑字（三者必须成组改，否则会出现黑底黑字看不见） */
+[data-theme='abcd'] .marquee {
+  background: #ffd70f;
+  color: #000000;
+  border-block: 0;
+}
+
+[data-theme='abcd'] .marquee__item {
+  color: #000000;
+}
+
+[data-theme='abcd'] .marquee__item i {
+  background: #000000;
+}
+
+/* ---------- 全局：去掉所有柔和修饰 ---------- */
+
+[data-theme='abcd'] .project__media,
+[data-theme='abcd'] .pcard__media,
+[data-theme='abcd'] .profile__portrait {
+  box-shadow: none;
+}
+
+[data-theme='abcd'] img {
+  border-radius: 0;
+}
+
+/* ---------- 导航：左品牌 + 右页码标签 ---------- */
+
+[data-theme='abcd'] .nav--solid {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--line-2);
+}
+
+[data-theme='abcd'] .nav__brand-cn {
+  letter-spacing: 0.24em;
+}
+
+[data-theme='abcd'] .nav__link em {
+  opacity: 0.35;
+}
+
+[data-theme='abcd'] .nav__link.is-active em {
+  color: var(--ink);
+  opacity: 1;
+}
+
+[data-theme='abcd'] .nav__cta {
+  border-radius: 0;
+  border-color: var(--line-2);
+}
+
+[data-theme='abcd'] .nav--solid .nav__cta {
+  border-color: var(--ink);
+}
+
+/* ---------- 封面：黑底是它的名字 ---------- */
+
+[data-theme='abcd'] .cover {
+  background: #000;
+}
+
+[data-theme='abcd'] .cover__veil {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.86) 60%, #000 100%);
+}
+
+[data-theme='abcd'] .cover__scene-img {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+
+[data-theme='abcd'] .cover__video.is-ready {
+  opacity: 0.24;
+  filter: grayscale(0.7);
+}
+
+/* 大写的英文宣言（ABCD 的招牌句法） */
+.cover__caps {
+  max-width: 56ch;
+  margin-top: clamp(16px, 1.8vw, 26px);
+  font-family: var(--font-display);
+  font-size: clamp(11px, 0.95vw, 15px);
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cover__caps b {
+  font-weight: 500;
+  color: #fff;
+}
+
+[data-theme='abcd'] .btn--line {
+  border-radius: 0;
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+/* ---------- 章节头：编号 + 大写英文 + 中文标题 ---------- */
+
+[data-theme='abcd'] .sec-head {
+  border-top: 1px solid var(--line-2);
+}
+
+[data-theme='abcd'] .sec-head__en::before {
+  content: '/ ';
+  opacity: 0.5;
+}
+
+[data-theme='abcd'] .sec-head__title {
+  letter-spacing: -0.02em;
+}
+
+[data-theme='abcd'] .sec-head__note {
+  text-transform: none;
+  color: var(--ink-2);
+}
+
+/* ---------- 滚动条：黑白反相（规则集中在文件上部，这里不再重复） ---------- */
+
+/* ---------- 项目卡：去框、去圆角、字号收紧 ---------- */
+
+[data-theme='abcd'] .project__title,
+[data-theme='abcd'] .pcard__title {
+  letter-spacing: -0.02em;
+}
+
+[data-theme='abcd'] .project__tags li,
+[data-theme='abcd'] .pcard__tags li {
+  border-color: var(--line);
+  border-radius: 0;
+}
+
+[data-theme='abcd'] .project__media-tag {
+  border-radius: 0;
+  background: #fff;
+  color: #000;
+}
+
+[data-theme='abcd'] .project__metric,
+[data-theme='abcd'] .pcard__metric {
+  border-top: 1px solid var(--line-2);
+}
+
+/* ---------- 个人经历：年份 → 条目表格（JUDGE / AWARDS 结构） ---------- */
+
+[data-theme='abcd'] .cv {
+  border-top: 1px solid var(--line-2);
+}
+
+[data-theme='abcd'] .cv__row {
+  border-bottom: 1px solid var(--line);
+  padding-block: clamp(14px, 1.4vw, 20px);
+}
+
+[data-theme='abcd'] .cv__period {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+[data-theme='abcd'] .cv__role {
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: var(--ink-2);
+}
+
+[data-theme='abcd'] .cv__note {
+  color: var(--ink-2);
+}
+
+/* ---------- 能力卡：黑线网格，悬停整块反黑 ---------- */
+
+[data-theme='abcd'] .cap__grid {
+  background: var(--line-2);
+  border-color: var(--line-2);
+}
+
+[data-theme='abcd'] .cap__num {
+  color: var(--ink-3);
+}
+
+[data-theme='abcd'] .cap__card:hover .cap__num {
+  color: #fff;
+}
+
+/* ---------- AI 流程：更硬的表格感 ---------- */
+
+[data-theme='abcd'] .ai__grid {
+  background: var(--line-2);
+  border-color: var(--line-2);
+}
+
+[data-theme='abcd'] .ai__num {
+  color: var(--ink-3);
+}
+
+[data-theme='abcd'] .ai__step:hover {
+  background: #fff;
+}
+
+/* ---------- 收尾页：︎︎︎ 箭头链接列表 ---------- */
+
+[data-theme='abcd'] .contact {
+  background: #000;
+}
+
+[data-theme='abcd'] .contact::before {
+  display: none;
+}
+
+[data-theme='abcd'] .contact__col a::before,
+[data-theme='abcd'] .contact__col span::before {
+  content: '\25B8\25B8\25B8  ';
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: -0.06em;
+}
+
+[data-theme='abcd'] .contact__mail {
+  border-bottom-width: 2px;
+  letter-spacing: -0.03em;
+}
+
+[data-theme='abcd'] .contact__title {
+  letter-spacing: -0.035em;
+}
+
+/* ---------- 陈述段：整块反黑，字号收紧 ---------- */
+
+[data-theme='abcd'] .statement {
+  background: #000;
+  color: #fff;
+  border-block: 0;
+}
+
+[data-theme='abcd'] .statement__meta,
+[data-theme='abcd'] .statement__quote cite {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme='abcd'] .statement__meta span:first-child {
+  color: #fff;
+}
+
+/* ---------- 通用：等宽标签更硬 ---------- */
+
+[data-theme='abcd'] .mono {
+  letter-spacing: 0.14em;
+}
+
+[data-theme='abcd'] .profile__role,
+[data-theme='abcd'] .pcard__cat {
+  color: var(--ink-2);
+}
+
+[data-theme='abcd'] .profile__portrait-tag {
+  border-radius: 0;
+  background: #000;
+}
+
+[data-theme='abcd'] .profile__contacts {
+  border-block-color: var(--line-2);
+  background: var(--line);
+}
+
+/* 个人经历整块压黑后，联系表格的单元格必须跟着变黑，
+   否则会出现「白底 + 白字」的隐形表格（曾经踩过）。
+   注意要跟 .profile 的底色一致，才能只露出 1px 发丝线。 */
+[data-theme='abcd'] .profile__contact {
+  background: #000000;
+}
+
+[data-theme='abcd'] .profile__stats {
+  border-top: 1px solid var(--line-2);
+}
+
+/* 选中态：黑白反相，不做彩色 */
+[data-theme='abcd'] ::selection {
+  background: #0a0a0a;
+  color: #fff;
+}
+
+[data-theme='abcd'] .progress__bar {
+  background: #0a0a0a;
+}

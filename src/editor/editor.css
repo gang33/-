@@ -1,0 +1,1260 @@
+/* ==========================================================================
+   编辑工具栏样式（只在 ?edit 或开发模式出现）
+   ========================================================================== */
+
+[data-editor] {
+  position: fixed;
+  z-index: 500;
+  bottom: 0;
+  right: 0;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #1a1a1a;
+}
+
+.editor-launcher {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 520;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #111;
+  color: #f3f0ea;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s;
+}
+
+.editor-launcher:hover {
+  transform: translateY(-2px);
+}
+
+.editor-launcher.is-open {
+  background: #9c3a26;
+  font-size: 20px;
+}
+
+.editor-launcher.has-changes::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c15b3f;
+}
+
+.editor-panel {
+  position: fixed;
+  left: auto;
+  top: 18px;
+  right: auto;
+  z-index: 510;
+  display: flex;
+  flex-direction: column;
+  width: 372px;
+  max-width: calc(100vw - 20px);
+  max-height: min(780px, calc(100vh - 36px));
+  background: #fbfaf7;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 6px;
+  /* 阴影收小：原来 70px 模糊会在面板外压出一大片灰，编辑时特别挡视线 */
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  animation: editorIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.editor-panel.is-dragging {
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.32);
+  cursor: grabbing;
+}
+
+@keyframes editorIn {
+  from {
+    transform: translateY(-10px) scale(0.99);
+    opacity: 0;
+  }
+}
+
+.editor-panel__head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 18px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f4f1ea;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.editor-panel.is-dragging .editor-panel__head {
+  cursor: grabbing;
+}
+
+.editor-panel__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.editor-panel__grip {
+  font-size: 13px;
+  color: #b6b0a5;
+  letter-spacing: -1px;
+}
+
+.editor-panel__head strong {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.editor-panel__sub {
+  color: #8b867d;
+  font-size: 10px;
+}
+
+.editor-panel__reset-pos {
+  position: static;
+  padding: 4px 9px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  color: #56524b;
+  cursor: pointer;
+}
+
+.editor-panel__tools {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-panel__undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.editor-panel__undo:hover:not(:disabled) {
+  border-color: #9c3a26;
+  color: #9c3a26;
+}
+
+.editor-panel__undo:active:not(:disabled) {
+  background: #9c3a26;
+  color: #fff;
+}
+
+.editor-panel__undo:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.editor-panel__undo em {
+  font-style: normal;
+  font-size: 9px;
+  color: #9c3a26;
+}
+
+.editor-panel__undo:disabled em {
+  color: inherit;
+}
+
+.editor-panel__reset-pos:hover {
+  border-color: #9c3a26;
+  color: #9c3a26;
+}
+
+.editor-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  /* 标签变多了（11 个），窄屏时宁可横向滚，也别把「封面字」挤成两行 */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.editor-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-tabs button {
+  flex: 0 0 auto;
+  padding: 10px 3px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  color: #8b867d;
+  cursor: pointer;
+}
+
+.editor-tabs button.is-active {
+  color: #9c3a26;
+  border-bottom-color: #9c3a26;
+}
+
+.editor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px 40px;
+}
+
+.editor-group {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.editor-group:last-child {
+  border-bottom: 0;
+}
+
+.editor-group h4 {
+  margin: 0 0 10px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9c3a26;
+}
+
+.editor-size-tag {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(156, 58, 38, 0.1);
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: #9c3a26;
+}
+
+.editor-field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.editor-field__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #56524b;
+}
+
+.editor-field__label em {
+  font-style: normal;
+  color: #a9a49b;
+  font-size: 10px;
+}
+
+.editor-field select,
+.editor-field input[type='range'] {
+  width: 100%;
+}
+
+.editor-field select {
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  color: #1a1a1a;
+}
+
+.editor-field input[type='color'] {
+  width: 100%;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.editor-field input[type='range'] {
+  accent-color: #9c3a26;
+}
+
+.editor-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  color: #1a1a1a;
+}
+
+.editor-input:focus {
+  outline: none;
+  border-color: #9c3a26;
+}
+
+
+/* 滑块右侧的可直接输入的数字框 */
+.editor-numwrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-num {
+  width: 62px;
+  padding: 2px 5px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 10.5px;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.editor-num::-webkit-outer-spin-button,
+.editor-num::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.editor-num:focus {
+  outline: 1px solid rgba(156, 58, 38, 0.5);
+  border-color: rgba(156, 58, 38, 0.4);
+}
+
+/* 多行输入（跑马灯的词表用） */
+.editor-textarea {
+  width: 100%;
+  min-height: 148px;
+  padding: 8px 9px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.75;
+  resize: vertical;
+}
+
+.editor-textarea:focus {
+  outline: 1px solid rgba(156, 58, 38, 0.5);
+  border-color: rgba(156, 58, 38, 0.4);
+}
+
+.editor-hint {
+  margin: 0 0 10px;
+  color: #8b867d;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+/* 面板里的整行按钮 / 两列对照 / 子分组 */
+.editor-btn {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.editor-btn:hover {
+  background: #f3f1ee;
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.editor-btn.is-ghost {
+  background: transparent;
+}
+
+.editor-pair {
+  display: grid;
+  grid-template-columns: 4.6em minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-pair .editor-field {
+  margin: 0;
+}
+
+.editor-pair .editor-field__label {
+  display: none;
+}
+
+.editor-subgroup {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.14);
+}
+
+.editor-sublabel {
+  margin: 0 0 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.44);
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.editor-actions button,
+.editor-toggle,
+.editor-image__actions button {
+  padding: 7px 12px;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  background: #1a1a1a;
+  color: #f3f0ea;
+  font-family: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.editor-actions button.is-ghost,
+.editor-image__actions button.is-ghost {
+  background: transparent;
+  color: #56524b;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.editor-toggle {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.editor-toggle.is-on {
+  background: #9c3a26;
+  border-color: #9c3a26;
+}
+
+.editor-actions textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #56524b;
+  resize: vertical;
+}
+
+/* 「封面字」面板里导出的那坨 JSON：等宽、可全选、不撑破面板 */
+.editor-export {
+  display: block;
+  width: 100%;
+  min-height: 104px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 9.5px;
+  line-height: 1.5;
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+}
+
+/* 存储不可用这类要紧的提示，别再是灰的 */
+.editor-hint.is-warn {
+  color: #b4472f;
+}
+
+.editor-images {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-image {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.editor-image img {
+  width: 74px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #e8e4db;
+}
+
+.editor-image__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-image__meta > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #56524b;
+  font-size: 10px;
+}
+
+.editor-image__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.editor-image__actions button {
+  padding: 4px 9px;
+  font-size: 10px;
+}
+
+.editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-list__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+  font-size: 10px;
+  line-height: 1.6;
+  position: relative;
+  padding-right: 18px;
+}
+
+.editor-list__del {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #b6b0a5;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.editor-list__del:hover {
+  color: #9c3a26;
+}
+
+.editor-list__row del {
+  color: #a9a49b;
+  text-decoration: line-through;
+}
+
+.editor-list__row ins {
+  color: #9c3a26;
+  text-decoration: none;
+}
+
+/* ---------- 模块列表 ---------- */
+
+.editor-modules {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.editor-module {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.editor-module.is-active {
+  background: rgba(156, 58, 38, 0.07);
+  box-shadow: inset 2px 0 0 #9c3a26;
+}
+
+.editor-module.is-hidden .editor-module__name {
+  color: #b6b0a5;
+  text-decoration: line-through;
+}
+
+.editor-module__name {
+  flex: 1;
+  padding: 2px 6px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 11px;
+  color: #1a1a1a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.editor-module.is-active .editor-module__name {
+  color: #9c3a26;
+}
+
+.editor-module__arrows {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.editor-module__arrows button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  color: #56524b;
+  cursor: pointer;
+}
+
+.editor-module__arrows button:hover {
+  border-color: #9c3a26;
+  color: #9c3a26;
+}
+
+.editor-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-color-row input[type='color'] {
+  flex: 1;
+}
+
+.editor-color-row button {
+  padding: 5px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  color: #56524b;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ---------- 标注列表面板 ---------- */
+
+.editor-note-row {
+  display: grid;
+  grid-template-columns: 22px 1fr 20px;
+  gap: 8px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.12);
+}
+
+.editor-note-row__num {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #9c3a26;
+  color: #fff;
+  font-size: 10px;
+}
+
+.editor-note-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.editor-note-row__meta {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: #8b867d;
+}
+
+.editor-note-row textarea {
+  width: 100%;
+  padding: 6px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  resize: vertical;
+}
+
+.editor-note-row__del {
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  color: #b6b0a5;
+  cursor: pointer;
+}
+
+.editor-note-row__del:hover {
+  color: #9c3a26;
+}
+
+/* ---------- 页面上的标注图钉 / 框选 ---------- */
+
+.editor-notes[data-editor] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  height: 0;
+  min-height: 100%;
+  z-index: 480;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  text-transform: none;
+}
+
+.editor-note {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.editor-note--rect {
+  transform: none;
+  border: 1.5px dashed #9c3a26;
+  background: rgba(156, 58, 38, 0.06);
+}
+
+.editor-note--rect.is-active {
+  background: rgba(156, 58, 38, 0.1);
+  border-style: solid;
+}
+
+.editor-note--rect .editor-note__num {
+  position: absolute;
+  top: -11px;
+  left: -11px;
+}
+
+.editor-note__num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #9c3a26;
+  color: #fff;
+  font-size: 10.5px;
+  box-shadow: 0 4px 12px rgba(156, 58, 38, 0.4);
+}
+
+.editor-note.is-active .editor-note__num {
+  background: #1a1a1a;
+}
+
+.editor-note__text {
+  max-width: 190px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: rgba(26, 26, 26, 0.92);
+  color: #f3f0ea;
+  font-size: 10px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.editor-note__pop {
+  width: 216px;
+  padding: 8px;
+  border-radius: 5px;
+  background: #fbfaf7;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  cursor: default;
+}
+
+.editor-note__pop textarea {
+  width: 100%;
+  padding: 6px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  resize: vertical;
+}
+
+.editor-note__pop-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.editor-note__pop-actions button {
+  flex: 1;
+  padding: 5px 0;
+  border: 1px solid #1a1a1a;
+  border-radius: 3px;
+  background: #1a1a1a;
+  color: #f3f0ea;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.editor-note__pop-actions button.is-ghost {
+  background: transparent;
+  color: #56524b;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.editor-rubber {
+  position: absolute;
+  border: 1.5px dashed #9c3a26;
+  background: rgba(156, 58, 38, 0.08);
+  pointer-events: none;
+}
+
+/* ---------- 移动模式：选中高亮 ---------- */
+
+.editor-move-sel {
+  outline: 1.5px dashed #9c3a26 !important;
+  outline-offset: 2px;
+  background-color: rgba(156, 58, 38, 0.04);
+}
+
+body.editor-move-mode {
+  cursor: grab;
+}
+
+/* ---------- 「版本」面板里的调整批次 ---------- */
+
+.editor-batch {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.editor-batch ins {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.editor-batch__before {
+  font-size: 9.5px;
+  color: #a9a49b;
+  letter-spacing: 0.02em;
+}
+
+.editor-batch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.editor-batch__btn {
+  padding: 3px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.editor-batch__btn:hover {
+  background: #f1eee8;
+}
+
+.editor-batch__btn.is-on {
+  background: #9c3a26;
+  border-color: #9c3a26;
+  color: #fff;
+}
+
+/* ---------- 模式光标 ---------- */
+
+body.editor-note-mode {
+  cursor: crosshair;
+  /* 触屏/手写笔：不加这条，浏览器会把拖拽当成滚动手势，pointermove 直接停发，
+     选框就会卡住不跟手 */
+  touch-action: none;
+  /* 拖框时不要顺手选中页面文字 */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.editor-note-mode a,
+body.editor-note-mode button,
+body.editor-note-mode [data-editor] {
+  cursor: crosshair;
+}
+
+body.editor-pick-mode section,
+body.editor-pick-mode div[id] {
+  cursor: crosshair;
+  outline: 1px dashed rgba(156, 58, 38, 0.4);
+  outline-offset: -4px;
+}
+
+body.editor-pick-mode section:hover,
+body.editor-pick-mode div[id]:hover {
+  outline: 2px solid #9c3a26;
+  outline-offset: -4px;
+  background: rgba(156, 58, 38, 0.03);
+}
+
+/* ---------- 跟随文字的浮动工具条 ---------- */
+
+/* 跟随文字的浮动工具条：做小做淡，别挡住正在改的那段文字 */
+.editor-quick {
+  position: fixed;
+  /* 固定在右下角，避开「编辑」浮钮 */
+  right: 20px;
+  bottom: 84px;
+  top: auto;
+  left: auto;
+  z-index: 495;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(24, 24, 24, 0.82);
+  color: #f3f0ea;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  /* 硬性夹住尺寸：无论内部塞进什么，都不许长成一大块盖住页面 */
+  /* 硬夹一行高：窄窗口里 flex 会把内容折成多行、把条子撑成 600 多像素高，
+     那样就是一大块灰盖住页面。这里锁死高度，超宽就横向滚。 */
+  flex-wrap: nowrap;
+  height: 30px;
+  max-width: min(560px, 92vw);
+  overflow-x: auto;
+  overflow-y: hidden;
+  animation: quickIn 0.18s ease;
+  /* 不挡视线：不透明度略降，鼠标靠近时再完全显现 */
+  opacity: 0.88;
+  transition: opacity 0.16s linear;
+}
+
+.editor-quick:hover {
+  opacity: 1;
+}
+
+@keyframes quickIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.editor-quick__label {
+  color: rgba(243, 240, 234, 0.5);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+
+.editor-quick__value {
+  min-width: 34px;
+  text-align: center;
+  color: #fff;
+  font-size: 11px;
+}
+
+.editor-quick button {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid rgba(243, 240, 234, 0.28);
+  border-radius: 3px;
+  background: transparent;
+  color: #f3f0ea;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.editor-quick button:hover {
+  background: #9c3a26;
+  border-color: #9c3a26;
+}
+
+.editor-quick__sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 3px;
+  background: rgba(243, 240, 234, 0.2);
+}
+
+.editor-quick .editor-quick__ghost {
+  border-color: transparent;
+  color: rgba(243, 240, 234, 0.6);
+}
+
+.editor-quick .editor-quick__ghost:hover {
+  background: rgba(243, 240, 234, 0.12);
+  color: #fff;
+}
+
+/* 面板里的字号快捷行 */
+.editor-size-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.editor-size-row__label {
+  flex: 1;
+  color: #56524b;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.editor-size-row strong {
+  min-width: 36px;
+  text-align: center;
+  font-size: 11px;
+  color: #9c3a26;
+}
+
+.editor-size-row button {
+  min-width: 26px;
+  height: 24px;
+  padding: 0 7px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 3px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.editor-size-row button:hover {
+  border-color: #9c3a26;
+  color: #9c3a26;
+}
+
+.editor-size-row button.is-ghost {
+  color: #8b867d;
+  border-color: transparent;
+}
+
+/* 改动后短暂高亮，让人知道改的是哪一块 */
+.editor-flash {
+  animation: editorFlash 0.9s ease;
+}
+
+/* 点选文字模式 */
+body.editor-text-pick {
+  cursor: crosshair;
+}
+
+body.editor-text-pick h1,
+body.editor-text-pick h2,
+body.editor-text-pick h3,
+body.editor-text-pick h4,
+body.editor-text-pick p,
+body.editor-text-pick li,
+body.editor-text-pick dd,
+body.editor-text-pick dt,
+body.editor-text-pick cite,
+body.editor-text-pick span.mono {
+  outline: 1px dashed rgba(156, 58, 38, 0.35);
+  outline-offset: 2px;
+  cursor: crosshair;
+}
+
+body.editor-text-pick h1:hover,
+body.editor-text-pick h2:hover,
+body.editor-text-pick h3:hover,
+body.editor-text-pick p:hover,
+body.editor-text-pick li:hover {
+  outline: 1px solid #9c3a26;
+  background: rgba(156, 58, 38, 0.05);
+}
+
+.editor-text-active {
+  outline: 2px solid #9c3a26 !important;
+  outline-offset: 2px;
+  background: rgba(156, 58, 38, 0.04);
+}
+
+@keyframes editorFlash {
+  0% {
+    box-shadow: inset 0 0 0 3px rgba(156, 58, 38, 0.85);
+  }
+  100% {
+    box-shadow: inset 0 0 0 3px rgba(156, 58, 38, 0);
+  }
+}
+
+.editor-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  z-index: 530;
+  padding: 10px 14px;
+  background: #1a1a1a;
+  color: #f3f0ea;
+  border-radius: 4px;
+  font-size: 11px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+/* ---------- 对比原文 ---------- */
+
+.editor-compare-tip {
+  position: fixed;
+  z-index: 540;
+  max-width: 300px;
+  padding: 9px 12px;
+  border-left: 2px solid #9c3a26;
+  border-radius: 3px;
+  background: rgba(26, 26, 26, 0.95);
+  color: #f3f0ea;
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+.editor-compare-tip span {
+  display: block;
+  margin-bottom: 4px;
+  color: #c15b3f;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+
+[data-editor-original].editor-compare-active {
+  outline: 2px dashed #c15b3f !important;
+  outline-offset: 3px;
+  background: rgba(193, 91, 63, 0.08) !important;
+}
+
+/* ---------- 文字编辑模式：可点选区域提示 ---------- */
+
+body.editor-text-mode h1,
+body.editor-text-mode h2,
+body.editor-text-mode h3,
+body.editor-text-mode h4,
+body.editor-text-mode p,
+body.editor-text-mode dd,
+body.editor-text-mode cite {
+  outline: 1px dashed rgba(156, 58, 38, 0.45);
+  outline-offset: 3px;
+  cursor: text;
+  transition: background 0.2s;
+}
+
+body.editor-text-mode h1:hover,
+body.editor-text-mode h2:hover,
+body.editor-text-mode h3:hover,
+body.editor-text-mode p:hover {
+  background: rgba(156, 58, 38, 0.06);
+}
+
+body.editor-text-mode [contenteditable='true'] {
+  outline: 2px solid #9c3a26;
+  background: rgba(156, 58, 38, 0.05);
+}

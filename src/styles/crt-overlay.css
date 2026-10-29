@@ -1,0 +1,150 @@
+/* ---------------- CRT 扫描线覆膜（复刻 pxpush.com） ---------------- */
+/* 四层纯 CSS 装饰，全部 pointer-events: none。
+   想临时关掉：给 <html> 或 <body> 加 class="no-crt"。 */
+
+.crtScan,
+.crtScan::before,
+.crtScan::after,
+.crtNoise,
+.crtGloom,
+.crtVignette {
+  pointer-events: none;
+}
+
+/* ① 扫描线容器 */
+.crtScan {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 22;
+  opacity: 0.16;
+}
+
+/* ①a 一条缓慢上下滚过的深色扫描带：8 秒一趟，从屏幕底部滚到顶外 */
+.crtScan::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: clamp(2px, 0.1vw, 3px);
+  background: #000000b3;
+  transform: translate3d(0, -10vh, 0);
+  will-change: transform;
+  animation: crtScanline 8s linear infinite;
+}
+
+/* ①b 全屏水平细线：一切片铺满，每 1/60 秒跳一格，模拟刷新 */
+.crtScan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.3) 51%);
+  background-size: 100% 0.4vw;
+  animation: crtScanlines 1s steps(60) infinite;
+}
+
+@keyframes crtScanline {
+  0% {
+    transform: translate3d(0, 110vh, 0);
+  }
+  to {
+    transform: translate3d(0, -200vh, 0);
+  }
+}
+
+@keyframes crtScanlines {
+  0% {
+    background-position: 0 50%;
+  }
+}
+
+/* ② 噪点：SVG 湍流当贴图，每 0.5 秒瞬移一次 */
+.crtNoise {
+  position: fixed;
+  top: -10rem;
+  left: -10rem;
+  width: calc(100% + 20rem);
+  height: calc(100% + 20rem);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-position: 50%;
+  mix-blend-mode: overlay;
+  opacity: 0.16;
+  z-index: 100;
+  animation: crtNoiseShift 0.5s steps(1) infinite;
+}
+
+@keyframes crtNoiseShift {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-6rem, 3rem, 0); }
+  40% { transform: translate3d(5rem, -5rem, 0); }
+  60% { transform: translate3d(-4rem, -2rem, 0); }
+  80% { transform: translate3d(6rem, 4rem, 0); }
+  100% { transform: translate3d(-3rem, 1rem, 0); }
+}
+
+/* ③ 整体虚焦一层 */
+.crtGloom {
+  position: fixed;
+  inset: 0;
+  z-index: 23;
+  overflow: hidden;
+}
+
+.crtGloom::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0.12;
+}
+
+/* ④ 四周压暗（原站用的是一张 crt.png，这里用径向渐变等效） */
+.crtVignette {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 58%,
+    rgba(0, 0, 0, 0.2) 82%,
+    rgba(0, 0, 0, 0.46) 100%
+  );
+  opacity: 0.6;
+}
+
+/* 想整体关掉就把这个类挂到 html 上：?crt=0 */
+html.no-crt .crtScan,
+html.no-crt .crtNoise,
+html.no-crt .crtGloom,
+html.no-crt .crtVignette {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .crtNoise {
+    display: none;      /* 手机上噪点太费电、也更糊 */
+  }
+
+  .crtScan {
+    opacity: 0.18;
+  }
+
+  .crtScan::after {
+    background-size: 100% 0.4vh;
+  }
+
+  .crtVignette {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crtScan::before,
+  .crtScan::after,
+  .crtNoise {
+    animation: none;
+  }
+}
